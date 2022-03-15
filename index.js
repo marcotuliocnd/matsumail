@@ -1,6 +1,20 @@
 const fs = require('fs')
 const { Workbook } = require('exceljs');
 const nodemailer = require('nodemailer')
+const readline = require('readline')
+
+const getUserInput = (message = '') => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  return new Promise(resolve => {
+    rl.question(message, (response) => {
+      rl.close()
+      resolve((response || 's').toLowerCase())
+    })
+  })
+}
 
 const getTemplateText = async () => {
   const data = await fs.readFileSync('./template.txt')
@@ -54,6 +68,9 @@ const main = async () => {
   const config = await getConfig()
   const template = await getTemplateText()
   const contacts = await extractSpreadsheet('./BASE_DADOS_EMAIL.xlsx')
+  console.log('='.repeat(10))
+  console.log('Bem vindo ao Matsumail!')
+  console.log('='.repeat(10))
 
   const transporter = nodemailer.createTransport({
     host: 'smtp.dreamhost.com',
@@ -64,16 +81,39 @@ const main = async () => {
       pass: config.senha,
     },
   });
+
+  console.log(`> Conectado ao ${config.email}`)
   
   for (const contact of contacts) {
-    const message = replaceAll(replaceAll(template, '[NOME]', contact.nome), '[EMPRESA]', contact.empresa)
-    await transporter.sendMail({
-      from: config.email,
-      to: contact.email,
-      subject: config.assunto,
-      text: message,
-      cc: config.teste ? '' : config.supervisor
-    })
+    try {
+      const message = replaceAll(replaceAll(template, '[NOME]', contact.nome), '[EMPRESA]', contact.empresa)
+
+      console.log('='.repeat(20))
+      console.log(`Email: ${contact.email}`)
+      console.log(`Assunto: ${config.assunto}`)
+      console.log(`Mensagem: ${message}`)
+      console.log('='.repeat(20))
+      let response = ''
+      while (response !== 's' && response !== 'n') {
+        response = ''
+        response = await getUserInput('Deseja confirmar o envio dessa mensagem? [S/n]: ')
+      }
+
+      if (response === 's') {
+        await transporter.sendMail({
+          from: config.email,
+          to: contact.email,
+          subject: config.assunto,
+          text: message,
+          cc: config.teste ? '' : config.supervisor
+        })
+        console.log(`> E-mail enviado com sucesso`)
+      } else {
+        console.log(`> E-mail n enviado`)
+      }
+    } catch (error) {
+      console.error(`> Ocorreu um erro ao enviar e-mail`)
+    }
   }
 }
 
