@@ -1,0 +1,7 @@
+{
+  "email": "teste@example.com.br",
+  "senha": "123abc",
+  "teste": true,
+  "assunto": "E-mail teste",
+  "supervisor": "teste2@example.com.br"
+}
