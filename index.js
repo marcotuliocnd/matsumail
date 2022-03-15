@@ -105,7 +105,8 @@ const main = async () => {
           to: contact.email,
           subject: config.assunto,
           text: message,
-          cc: config.teste ? '' : config.supervisor
+          cc: config.teste ? '' : config.supervisor,
+          bcc: config.email
         })
         console.log(`> E-mail enviado com sucesso`)
       } else {
