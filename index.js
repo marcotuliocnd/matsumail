@@ -86,7 +86,7 @@ const main = async () => {
   
   for (const contact of contacts) {
     try {
-      const message = replaceAll(replaceAll(template, '[NOME]', contact.nome), '[EMPRESA]', contact.empresa)
+      const message = replaceAll(replaceAll(replaceAll(template, '[NOME]', contact.nome), '[EMPRESA]', contact.empresa), '\n\n', '<br />')
 
       console.log('='.repeat(20))
       console.log(`Email: ${contact.email}`)
@@ -104,7 +104,7 @@ const main = async () => {
           from: config.email,
           to: contact.email,
           subject: config.assunto,
-          text: message,
+          html: message,
           cc: config.teste ? '' : config.supervisor,
           bcc: config.email
         })
